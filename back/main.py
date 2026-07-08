@@ -1,6 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request 
 from fastapi.middleware.cors import CORSMiddleware
-
+from jose import jwt, JWTError
+from core.security import JWT_SECRET, JWT_ALGORITHM
+from db.database import SessionLocal
+from models.log_model import Log
 # importa todos os models pra registrar no SQLAlchemy (os relacionamentos precisam de todos)
 import models.user_model
 import models.aluno_model
@@ -8,6 +11,7 @@ import models.docente_model
 import models.disciplina_model
 import models.turma_model
 import models.matricula_model
+import models.log_model
 
 from routes import aluno_routes, auth_routes, docente_routes, me_routes, disciplina_routes, turma_routes, relatorio_routes, matricula_routes
 
@@ -24,6 +28,39 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def log_auditoria(request: Request, call_next):
+    # 1 deixa a requisicao rodar e pega a resposta
+    response = await call_next(request)
+
+    # 2 so audita acoes que MODIFICAM
+    if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+        # 3 descobre o usuario pelo token (na mao, middleware nao usa Depends)
+        usuario_id = None
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            try:
+                payload = jwt.decode(auth[7:], JWT_SECRET, algorithms=[JWT_ALGORITHM])
+                usuario_id = payload.get("sub")
+            except JWTError:
+                pass
+
+        # 4 salva o log (sessao criada na mao)
+        db = SessionLocal()
+        try:
+            db.add(Log(
+                ip=request.client.host,
+                rota=request.url.path,
+                metodo=request.method,
+                usuario_id=usuario_id,
+                status_code=response.status_code,
+            ))
+            db.commit()
+        finally:
+            db.close()
+
+    return response
 
 # essa parte liga as rotas na aplicação
 app.include_router(auth_routes.router)
