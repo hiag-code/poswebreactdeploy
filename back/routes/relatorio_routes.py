@@ -16,7 +16,7 @@ router = APIRouter(
     tags=["Relatórios"]
 )
 
-#relatoria de turmas
+#relatorio de turmas
 @router.get("/turmas")
 def relatorio_turmas(
     db: Session = Depends(get_db),
@@ -43,17 +43,9 @@ def relatorio_turmas(
         .all()
     )
 
-    total_vagas = 0
-    total_matriculados = 0
-    total_ociosas = 0
     detalhes_turma = []
 
     for item in relatorio:
-        total_vagas = item.vagas_total
-        total_matriculados = item.matriculados
-        total_ociosas = item.vagas_disponiveis
-
-
         detalhes_turma.append({
             "turma_id": item.turma_id,
             "disciplina": item.disciplina,
@@ -69,34 +61,33 @@ def relatorio_turmas(
     }
 
 #relatorio academico
-
 @router.get("/academico")
 def relatorio_academico(
     db: Session = Depends(get_db),
-    Usuario: dict = Depends(require_admin)):
-
+    usuario: dict = Depends(require_admin),
+):
     relatorio = (
-            db.query(
-        Turma.id.label("turma_id"),
-        Disciplina.nome.label("disciplina"),
-        Turma.semestre,
-        Turma.vagas_total,
-        Turma.vagas_disponiveis,
-        Docente.nome.label("docente_nome"),
-        func.count(Matricula.id).label("matriculados")
-    )
-    .join(Disciplina, Turma.disciplina_id == Disciplina.id)
-    .join(Docente, Turma.docente_id == Docente.id)
-    .outerjoin(Matricula, Turma.id == Matricula.turma_id)
-    .group_by(
-        Turma.id,
-        Disciplina.nome,
-        Turma.semestre,
-        Turma.vagas_total,
-        Turma.vagas_disponiveis,
-        Docente.nome,
-    )
-    .all()
+        db.query(
+            Turma.id.label("turma_id"),
+            Disciplina.nome.label("disciplina"),
+            Turma.semestre,
+            Turma.vagas_total,
+            Turma.vagas_disponiveis,
+            Docente.nome.label("docente_nome"),
+            func.count(Matricula.id).label("matriculados")
+        )
+        .join(Disciplina, Turma.disciplina_id == Disciplina.id)
+        .join(Docente, Turma.docente_id == Docente.id)
+        .outerjoin(Matricula, Turma.id == Matricula.turma_id)
+        .group_by(
+            Turma.id,
+            Disciplina.nome,
+            Turma.semestre,
+            Turma.vagas_total,
+            Turma.vagas_disponiveis,
+            Docente.nome,
+        )
+        .all()
     )
 
     total_vagas = 0
@@ -110,12 +101,10 @@ def relatorio_academico(
         total_matriculados += item.matriculados
         total_ociosas += item.vagas_disponiveis
 
-        #calcular a porcentagem de ocupação da turma
-        ocupacao_turma =  (item.matriculados / item.vagas_total) * 100 if item.vagas_total > 0 else 0.0
-
+        #calcular a porcentagem de ocupacao da turma
+        ocupacao_turma = (item.matriculados / item.vagas_total) * 100 if item.vagas_total > 0 else 0.0
 
         detalhes_turma_atual = {
-
             "turma_id": item.turma_id,
             "docente": item.docente_nome,
             "semestre": item.semestre,
@@ -125,7 +114,7 @@ def relatorio_academico(
             "percentual_ocupacao": round(ocupacao_turma, 2)
         }
 
-        #se a disciplina não estiver no dicionario iniciar ela
+        #se a disciplina nao estiver no dicionario iniciar ela
         if item.disciplina not in disciplina_dict:
             disciplina_dict[item.disciplina] = {
                 "disciplina": item.disciplina,
@@ -135,7 +124,6 @@ def relatorio_academico(
         #adicionar a turma na lista da sua disciplina
         disciplina_dict[item.disciplina]["turmas"].append(detalhes_turma_atual)
 
-
     taxa_ocupacao_geral = (total_matriculados / total_vagas) * 100 if total_vagas > 0 else 0.0
 
     return {
@@ -143,17 +131,16 @@ def relatorio_academico(
         "vagas_totais_ofertadas": total_vagas,
         "total_matriculados": total_matriculados,
         "total_vagas_ociosas": total_ociosas,
-        "taxa_de_ocupacao_geral": taxa_ocupacao_geral,
+        "taxa_de_ocupacao_geral": round(taxa_ocupacao_geral, 2),
         "detalhes_por_disciplina": list(disciplina_dict.values()),
     }
-
 
 #relatorio de matriculas
 @router.get("/matricula")
 def relatorio_matricula(
-    db : Session = Depends(get_db),
-    Usuario : dict = Depends(require_admin)):
-    
+    db: Session = Depends(get_db),
+    usuario: dict = Depends(require_admin),
+):
     relatorio = (
         db.query(
             Matricula.id,
@@ -165,14 +152,13 @@ def relatorio_matricula(
             Matricula.data_matricula,
             Matricula.status,
         )
-        .join(Aluno, Matricula.aluno_id == Aluno.id) 
+        .join(Aluno, Matricula.aluno_id == Aluno.id)
         .join(Turma, Matricula.turma_id == Turma.id)
         .join(Disciplina, Turma.disciplina_id == Disciplina.id)
         .all()
     )
 
     total_matriculados = 0
-    
     matricula_list = []
 
     for item in relatorio:
@@ -188,10 +174,10 @@ def relatorio_matricula(
             "codigo_turma": item.codigo_turma,
             "status_matricula": item.status
         }
-    
+
         matricula_list.append(detalhes_matricula_atual)
 
-    return{
+    return {
         "total_matriculado": total_matriculados,
         "matriculas": matricula_list
     }
