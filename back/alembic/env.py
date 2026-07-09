@@ -16,6 +16,8 @@ import models.disciplina_model
 import models.turma_model
 import models.matricula_model
 import models.log_model
+import models.noticia_model
+import models.edital_model
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
