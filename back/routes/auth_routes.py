@@ -9,12 +9,16 @@ from core.security import verify_password, create_access_token
 router = APIRouter(tags=["Autenticação"])
 
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse, summary="Fazer login")
 def login(dados: LoginRequest, db: Session = Depends(get_db)):
-    # [item 2] busca o usuário pelo email
+    """Autentica o usuário (email + senha) e devolve um **token JWT**.
+
+    Cole o token no botão **Authorize** (o cadeado, no topo) pra acessar as rotas protegidas.
+    """
+    # busca o usuário pelo email
     usuario = db.query(Usuario).filter(Usuario.email == dados.email).first()
 
-    # [item 5] se não existe OU a senha não bate -> 401 (mesma mensagem pros dois,
+    # se não existe OU a senha não bate -> 401 (mesma mensagem pros dois,
     # pra não revelar se o email existe)
     if not usuario or not verify_password(dados.senha, usuario.senha_hash):
         raise HTTPException(
@@ -22,8 +26,6 @@ def login(dados: LoginRequest, db: Session = Depends(get_db)):
             detail="Credenciais inválidas",
         )
 
-    # [item 3] gera o token JWT com o id e a role do usuário
+    # gera o token JWT com o id e a role do usuário
     token = create_access_token(user_id=usuario.id, role=usuario.role)
-
-    # [item 4] retorna o token (status 200 é o padrão de um POST que dá certo)
     return TokenResponse(access_token=token)
