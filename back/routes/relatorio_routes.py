@@ -21,13 +21,17 @@ router = APIRouter(
     tags=["Relatórios"]
 )
 
-#relatorio de turmas
-@router.get("/turmas")
+
+@router.get("/turmas", summary="Relatório de turmas")
 def relatorio_turmas(
     formato: str = Query(default="json"),
     db: Session = Depends(get_db),
     usuario: dict = Depends(require_admin),
 ):
+    """Ocupação das turmas: vagas totais, matriculados e vagas disponíveis. **Restrito a admin.**
+
+    Use `?formato=csv` pra baixar em planilha (CSV) em vez de JSON.
+    """
     relatorio = (
         db.query(
             Turma.id.label("turma_id"),
@@ -99,12 +103,13 @@ def relatorio_turmas(
         "detalhes_por_turma": detalhes_turma,
     }
 
-#relatorio academico
-@router.get("/academico")
+
+@router.get("/academico", summary="Relatório acadêmico")
 def relatorio_academico(
     db: Session = Depends(get_db),
     usuario: dict = Depends(require_admin),
 ):
+    """Ocupação agrupada por disciplina + taxa de ocupação geral do semestre. **Restrito a admin.**"""
     relatorio = (
         db.query(
             Turma.id.label("turma_id"),
@@ -174,12 +179,13 @@ def relatorio_academico(
         "detalhes_por_disciplina": list(disciplina_dict.values()),
     }
 
-#relatorio de matriculas
-@router.get("/matricula")
+
+@router.get("/matricula", summary="Relatório de matrículas")
 def relatorio_matricula(
     db: Session = Depends(get_db),
     usuario: dict = Depends(require_admin),
 ):
+    """Lista todas as matrículas: aluno, disciplina, turma e status. **Restrito a admin.**"""
     relatorio = (
         db.query(
             Matricula.id,

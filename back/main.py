@@ -15,7 +15,15 @@ import models.log_model
 
 from routes import aluno_routes, auth_routes, docente_routes, me_routes, disciplina_routes, turma_routes, relatorio_routes, matricula_routes, log_routes
 
-app = FastAPI(title="API Pós-Graduação IFBA")
+app = FastAPI(
+    title="API Pós-Graduação IFBA",
+    description=(
+        "Backend do sistema de gestão da pós-graduação em Sistemas Web Back-end "
+        "(IFBA — Grupo 5). Autenticação JWT, cadastros, matrículas, relatórios e auditoria.\n\n"
+        "Para testar rotas protegidas: faça **POST /login**, copie o `access_token` e clique em **Authorize**."
+    ),
+    version="1.0.0",
+)
 
 # CORS — libera o front-end a conversar com a API
 app.add_middleware(

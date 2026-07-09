@@ -3,6 +3,15 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # o que o cliente ENVIA pra criar (sem id — o banco gera)
 class DisciplinaCreate(BaseModel):
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "nome": "Banco de Dados",
+            "codigo": "BD101",
+            "carga_horaria": 60,
+            "ementa": "Modelagem, SQL e normalização.",
+        }
+    })
+
     nome: str = Field(min_length=2)
     codigo: str = Field(min_length=2)
     carga_horaria: int = Field(gt=0)

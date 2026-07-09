@@ -10,15 +10,24 @@ from core.security import hash_password          # novo para hashear a senha do 
 router = APIRouter(prefix="/alunos", tags=["Alunos"])
 
 
-@router.post("/", response_model=AlunoResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/",
+    response_model=AlunoResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Cadastrar aluno",
+)
 def criar_aluno(dados: AlunoCreate, db: Session = Depends(get_db)):
+    """Cadastra um aluno e cria o login dele (Usuario com role `estudante`).
+
+    Recusa CPF ou email já cadastrado (409).
+    """
     # 1. checa CPF ou email duplicado aqui
     if db.query(Aluno).filter((Aluno.cpf == dados.cpf) | (Aluno.email == dados.email)).first():
         raise HTTPException(status_code=409, detail="CPF ou email ja cadastrado")
     if db.query(Usuario).filter(Usuario.email == dados.email).first():
         raise HTTPException(status_code=409, detail="Email ja cadastrado")
 
-    # 2. cria o login (Usuario) com a senha em HASH(nao salve a senha em texto puro)
+    # 2. cria o login (Usuario) com a senha em HASH (nao salve a senha em texto puro)
     usuario = Usuario(
         email=dados.email,
         senha_hash=hash_password(dados.senha),
@@ -41,6 +50,7 @@ def criar_aluno(dados: AlunoCreate, db: Session = Depends(get_db)):
     return aluno
 
 
-@router.get("/", response_model=list[AlunoResponse])
+@router.get("/", response_model=list[AlunoResponse], summary="Listar alunos")
 def listar_alunos(db: Session = Depends(get_db)):
+    """Lista todos os alunos cadastrados."""
     return db.query(Aluno).all()
