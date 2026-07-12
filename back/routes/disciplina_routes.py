@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.disciplina_model import Disciplina
@@ -21,17 +22,23 @@ def criar_disciplina(
     usuario: dict = Depends(require_admin),
 ):
     """Cria uma disciplina no sistema. **Restrito a admin.** Recusa código já existente (409)."""
-    # codigo duplicado -> 409 (o codigo da disciplina tem que ser unico)
-    existe = db.query(Disciplina).filter(Disciplina.codigo == dados.codigo).first()
-    if existe:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Codigo de disciplina ja existe",
-        )
 
-    # salva e devolve 201 (com o id gerado)
-    disciplina = Disciplina(**dados.model_dump())
-    db.add(disciplina)
-    db.commit()
-    db.refresh(disciplina)
-    return disciplina
+    try:
+        # codigo duplicado -> 409 (o codigo da disciplina tem que ser unico)
+        existe = db.query(Disciplina).filter(Disciplina.codigo == dados.codigo).first()
+        if existe:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Codigo de disciplina ja existe",
+            )
+
+        # salva e devolve 201 (com o id gerado)
+        disciplina = Disciplina(**dados.model_dump())
+        db.add(disciplina)
+        db.commit()
+        db.refresh(disciplina)
+        return disciplina
+    
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Erro interno ao cadastrar a disciplina no banco de dados.")
