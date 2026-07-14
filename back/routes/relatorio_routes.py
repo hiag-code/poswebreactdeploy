@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from fastapi.responses import StreamingResponse
+from sqlalchemy.exc import SQLAlchemyError
 
 import csv
 from io import StringIO
@@ -32,76 +33,81 @@ def relatorio_turmas(
 
     Use `?formato=csv` pra baixar em planilha (CSV) em vez de JSON.
     """
-    relatorio = (
-        db.query(
-            Turma.id.label("turma_id"),
-            Disciplina.nome.label("disciplina"),
-            Turma.semestre,
-            Turma.vagas_total,
-            Turma.vagas_disponiveis,
-            func.count(Matricula.id).label("matriculados")
+
+    try:
+        relatorio = (
+            db.query(
+                Turma.id.label("turma_id"),
+                Disciplina.nome.label("disciplina"),
+                Turma.semestre,
+                Turma.vagas_total,
+                Turma.vagas_disponiveis,
+                func.count(Matricula.id).label("matriculados")
+            )
+            .join(Disciplina, Turma.disciplina_id == Disciplina.id)
+            .outerjoin(Matricula, Turma.id == Matricula.turma_id)
+            .group_by(
+                Turma.id,
+                Disciplina.nome,
+                Turma.semestre,
+                Turma.vagas_total,
+                Turma.vagas_disponiveis,
+            )
+            .all()
         )
-        .join(Disciplina, Turma.disciplina_id == Disciplina.id)
-        .outerjoin(Matricula, Turma.id == Matricula.turma_id)
-        .group_by(
-            Turma.id,
-            Disciplina.nome,
-            Turma.semestre,
-            Turma.vagas_total,
-            Turma.vagas_disponiveis,
-        )
-        .all()
-    )
 
-    detalhes_turma = []
+        detalhes_turma = []
 
-    for item in relatorio:
-        detalhes_turma.append({
-            "turma_id": item.turma_id,
-            "disciplina": item.disciplina,
-            "semestre": item.semestre,
-            "total_de_vagas": item.vagas_total,
-            "matriculados": item.matriculados,
-            "vagas_disponiveis": item.vagas_disponiveis,
-        })
+        for item in relatorio:
+            detalhes_turma.append({
+                "turma_id": item.turma_id,
+                "disciplina": item.disciplina,
+                "semestre": item.semestre,
+                "total_de_vagas": item.vagas_total,
+                "matriculados": item.matriculados,
+                "vagas_disponiveis": item.vagas_disponiveis,
+            })
 
-    if formato.lower() == "csv":
-        output = StringIO(newline="")
-        writer = csv.writer(output)
+        if formato.lower() == "csv":
+            output = StringIO(newline="")
+            writer = csv.writer(output)
 
-        writer.writerow([
-            "Turma ID",
-            "Disciplina",
-            "Semestre",
-            "Total de Vagas",
-            "Matriculados",
-            "Vagas Disponíveis",
-        ])
-
-        for turma in detalhes_turma:
             writer.writerow([
-                turma["turma_id"],
-                turma["disciplina"],
-                turma["semestre"],
-                turma["total_de_vagas"],
-                turma["matriculados"],
-                turma["vagas_disponiveis"],
+                "Turma ID",
+                "Disciplina",
+                "Semestre",
+                "Total de Vagas",
+                "Matriculados",
+                "Vagas Disponíveis",
             ])
 
-        output.seek(0)
+            for turma in detalhes_turma:
+                writer.writerow([
+                    turma["turma_id"],
+                    turma["disciplina"],
+                    turma["semestre"],
+                    turma["total_de_vagas"],
+                    turma["matriculados"],
+                    turma["vagas_disponiveis"],
+                ])
 
-        return StreamingResponse(
-            iter([output.getvalue()]),
-            media_type="text/csv",
-            headers={
-                "Content-Disposition": "attachment; filename=relatorio_turmas.csv"
-            },
-        )
+            output.seek(0)
 
-    return {
-        "total_turmas": len(relatorio),
-        "detalhes_por_turma": detalhes_turma,
-    }
+            return StreamingResponse(
+                iter([output.getvalue()]),
+                media_type="text/csv",
+                headers={
+                    "Content-Disposition": "attachment; filename=relatorio_turmas.csv"
+                },
+            )
+
+        return {
+            "total_turmas": len(relatorio),
+            "detalhes_por_turma": detalhes_turma,
+        }
+    
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar o relatório de turmas.")
 
 
 @router.get("/academico", summary="Relatório acadêmico")
@@ -110,74 +116,79 @@ def relatorio_academico(
     usuario: dict = Depends(require_admin),
 ):
     """Ocupação agrupada por disciplina + taxa de ocupação geral do semestre. **Restrito a admin.**"""
-    relatorio = (
-        db.query(
-            Turma.id.label("turma_id"),
-            Disciplina.nome.label("disciplina"),
-            Turma.semestre,
-            Turma.vagas_total,
-            Turma.vagas_disponiveis,
-            Docente.nome.label("docente_nome"),
-            func.count(Matricula.id).label("matriculados")
+
+    try:
+        relatorio = (
+            db.query(
+                Turma.id.label("turma_id"),
+                Disciplina.nome.label("disciplina"),
+                Turma.semestre,
+                Turma.vagas_total,
+                Turma.vagas_disponiveis,
+                Docente.nome.label("docente_nome"),
+                func.count(Matricula.id).label("matriculados")
+            )
+            .join(Disciplina, Turma.disciplina_id == Disciplina.id)
+            .join(Docente, Turma.docente_id == Docente.id)
+            .outerjoin(Matricula, Turma.id == Matricula.turma_id)
+            .group_by(
+                Turma.id,
+                Disciplina.nome,
+                Turma.semestre,
+                Turma.vagas_total,
+                Turma.vagas_disponiveis,
+                Docente.nome,
+            )
+            .all()
         )
-        .join(Disciplina, Turma.disciplina_id == Disciplina.id)
-        .join(Docente, Turma.docente_id == Docente.id)
-        .outerjoin(Matricula, Turma.id == Matricula.turma_id)
-        .group_by(
-            Turma.id,
-            Disciplina.nome,
-            Turma.semestre,
-            Turma.vagas_total,
-            Turma.vagas_disponiveis,
-            Docente.nome,
-        )
-        .all()
-    )
 
-    total_vagas = 0
-    total_matriculados = 0
-    total_ociosas = 0
+        total_vagas = 0
+        total_matriculados = 0
+        total_ociosas = 0
 
-    disciplina_dict = {}
+        disciplina_dict = {}
 
-    for item in relatorio:
-        total_vagas += item.vagas_total
-        total_matriculados += item.matriculados
-        total_ociosas += item.vagas_disponiveis
+        for item in relatorio:
+            total_vagas += item.vagas_total
+            total_matriculados += item.matriculados
+            total_ociosas += item.vagas_disponiveis
 
-        #calcular a porcentagem de ocupacao da turma
-        ocupacao_turma = (item.matriculados / item.vagas_total) * 100 if item.vagas_total > 0 else 0.0
+            #calcular a porcentagem de ocupacao da turma
+            ocupacao_turma = (item.matriculados / item.vagas_total) * 100 if item.vagas_total > 0 else 0.0
 
-        detalhes_turma_atual = {
-            "turma_id": item.turma_id,
-            "docente": item.docente_nome,
-            "semestre": item.semestre,
-            "vagas_total": item.vagas_total,
-            "vagas_disponiveis": item.vagas_disponiveis,
-            "matriculados": item.matriculados,
-            "percentual_ocupacao": round(ocupacao_turma, 2)
-        }
-
-        #se a disciplina nao estiver no dicionario iniciar ela
-        if item.disciplina not in disciplina_dict:
-            disciplina_dict[item.disciplina] = {
-                "disciplina": item.disciplina,
-                "turmas": []
+            detalhes_turma_atual = {
+                "turma_id": item.turma_id,
+                "docente": item.docente_nome,
+                "semestre": item.semestre,
+                "vagas_total": item.vagas_total,
+                "vagas_disponiveis": item.vagas_disponiveis,
+                "matriculados": item.matriculados,
+                "percentual_ocupacao": round(ocupacao_turma, 2)
             }
 
-        #adicionar a turma na lista da sua disciplina
-        disciplina_dict[item.disciplina]["turmas"].append(detalhes_turma_atual)
+            #se a disciplina nao estiver no dicionario iniciar ela
+            if item.disciplina not in disciplina_dict:
+                disciplina_dict[item.disciplina] = {
+                    "disciplina": item.disciplina,
+                    "turmas": []
+                }
 
-    taxa_ocupacao_geral = (total_matriculados / total_vagas) * 100 if total_vagas > 0 else 0.0
+            #adicionar a turma na lista da sua disciplina
+            disciplina_dict[item.disciplina]["turmas"].append(detalhes_turma_atual)
 
-    return {
-        "total_turmas": len(relatorio),
-        "vagas_totais_ofertadas": total_vagas,
-        "total_matriculados": total_matriculados,
-        "total_vagas_ociosas": total_ociosas,
-        "taxa_de_ocupacao_geral": round(taxa_ocupacao_geral, 2),
-        "detalhes_por_disciplina": list(disciplina_dict.values()),
-    }
+        taxa_ocupacao_geral = (total_matriculados / total_vagas) * 100 if total_vagas > 0 else 0.0
+
+        return {
+            "total_turmas": len(relatorio),
+            "vagas_totais_ofertadas": total_vagas,
+            "total_matriculados": total_matriculados,
+            "total_vagas_ociosas": total_ociosas,
+            "taxa_de_ocupacao_geral": round(taxa_ocupacao_geral, 2),
+            "detalhes_por_disciplina": list(disciplina_dict.values()),
+        }
+    
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar o relatório acadêmico.")
 
 
 @router.get("/matricula", summary="Relatório de matrículas")
@@ -186,43 +197,48 @@ def relatorio_matricula(
     usuario: dict = Depends(require_admin),
 ):
     """Lista todas as matrículas: aluno, disciplina, turma e status. **Restrito a admin.**"""
-    relatorio = (
-        db.query(
-            Matricula.id,
-            Aluno.nome.label("nome_aluno"),
-            Aluno.id.label("aluno_id"),
-            Disciplina.nome.label("nome_disciplina"),
-            Turma.codigo.label("codigo_turma"),
-            Disciplina.codigo,
-            Matricula.data_matricula,
-            Matricula.status,
+
+    try:
+        relatorio = (
+            db.query(
+                Matricula.id,
+                Aluno.nome.label("nome_aluno"),
+                Aluno.id.label("aluno_id"),
+                Disciplina.nome.label("nome_disciplina"),
+                Turma.codigo.label("codigo_turma"),
+                Disciplina.codigo,
+                Matricula.data_matricula,
+                Matricula.status,
+            )
+            .join(Aluno, Matricula.aluno_id == Aluno.id)
+            .join(Turma, Matricula.turma_id == Turma.id)
+            .join(Disciplina, Turma.disciplina_id == Disciplina.id)
+            .all()
         )
-        .join(Aluno, Matricula.aluno_id == Aluno.id)
-        .join(Turma, Matricula.turma_id == Turma.id)
-        .join(Disciplina, Turma.disciplina_id == Disciplina.id)
-        .all()
-    )
 
-    total_matriculados = 0
-    matricula_list = []
+        total_matriculados = 0
+        matricula_list = []
 
-    for item in relatorio:
-        total_matriculados += 1
+        for item in relatorio:
+            total_matriculados += 1
 
-        detalhes_matricula_atual = {
-            "matricula_id": item.id,
-            "nome_aluno": item.nome_aluno,
-            "id_aluno": item.aluno_id,
-            "data_de_matricula": item.data_matricula,
-            "disciplina": item.nome_disciplina,
-            "codigo_disciplina": item.codigo,
-            "codigo_turma": item.codigo_turma,
-            "status_matricula": item.status
+            detalhes_matricula_atual = {
+                "matricula_id": item.id,
+                "nome_aluno": item.nome_aluno,
+                "id_aluno": item.aluno_id,
+                "data_de_matricula": item.data_matricula,
+                "disciplina": item.nome_disciplina,
+                "codigo_disciplina": item.codigo,
+                "codigo_turma": item.codigo_turma,
+                "status_matricula": item.status
+            }
+
+            matricula_list.append(detalhes_matricula_atual)
+
+        return {
+            "total_matriculado": total_matriculados,
+            "matriculas": matricula_list
         }
-
-        matricula_list.append(detalhes_matricula_atual)
-
-    return {
-        "total_matriculado": total_matriculados,
-        "matriculas": matricula_list
-    }
+    
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erro interno ao gerar o relatório de matrículas.")

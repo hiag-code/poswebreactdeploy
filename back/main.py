@@ -67,6 +67,11 @@ async def log_auditoria(request: Request, call_next):
                 status_code=response.status_code,
             ))
             db.commit()
+
+        except Exception as e:
+            print(f"Aviso: Não foi possível salvar o log de auditoria. Erro: {e}")
+            db.rollback()
+
         finally:
             db.close()
 

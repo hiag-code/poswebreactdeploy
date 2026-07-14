@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.user_model import Usuario
@@ -15,17 +16,22 @@ def login(dados: LoginRequest, db: Session = Depends(get_db)):
 
     Cole o token no botão **Authorize** (o cadeado, no topo) pra acessar as rotas protegidas.
     """
-    # busca o usuário pelo email
-    usuario = db.query(Usuario).filter(Usuario.email == dados.email).first()
 
-    # se não existe OU a senha não bate -> 401 (mesma mensagem pros dois,
-    # pra não revelar se o email existe)
-    if not usuario or not verify_password(dados.senha, usuario.senha_hash):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Credenciais inválidas",
-        )
+    try:
+        # busca o usuário pelo email
+        usuario = db.query(Usuario).filter(Usuario.email == dados.email).first()
 
-    # gera o token JWT com o id e a role do usuário
-    token = create_access_token(user_id=usuario.id, role=usuario.role)
-    return TokenResponse(access_token=token)
+        # se não existe OU a senha não bate -> 401 (mesma mensagem pros dois,
+        # pra não revelar se o email existe)
+        if not usuario or not verify_password(dados.senha, usuario.senha_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Credenciais inválidas",
+            )
+
+        # gera o token JWT com o id e a role do usuário
+        token = create_access_token(user_id=usuario.id, role=usuario.role)
+        return TokenResponse(access_token=token)
+    
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erro interno ao tentar processar o login no banco de dados.")

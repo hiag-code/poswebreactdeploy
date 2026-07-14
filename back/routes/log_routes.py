@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.log_model import Log
@@ -23,4 +24,9 @@ def listar_logs(
 
     Use `?limite=N` pra controlar quantos registros vêm (mais recentes primeiro).
     """
-    return db.query(Log).order_by(Log.id.desc()).limit(limite).all()
+
+    try:
+        return db.query(Log).order_by(Log.id.desc()).limit(limite).all()
+    
+    except SQLAlchemyError:
+        raise HTTPException(status_code=500, detail="Erro interno ao buscar a lista de logs.")

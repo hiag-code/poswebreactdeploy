@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.turma_model import Turma
@@ -22,27 +23,33 @@ def criar_turma(dados: TurmaCreate, db: Session = Depends(get_db), logado: dict 
 
     Retorna 404 se a disciplina ou o docente informados não existirem.
     """
-    # verificar se o professor existe
-    professor_existe = db.query(Docente).filter(Docente.id == dados.docente_id).first()
-    if not professor_existe:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"professor com Dados {dados.docente_id}, não foi encontrado")
 
-    # verificar se a disciplina existe
-    disciplina_existe = db.query(Disciplina).filter(Disciplina.id == dados.disciplina_id).first()
-    if not disciplina_existe:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"A disciplina com Dados {dados.disciplina_id}, não foi encontrado")
+    try:
+        # verificar se o professor existe
+        professor_existe = db.query(Docente).filter(Docente.id == dados.docente_id).first()
+        if not professor_existe:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"professor com Dados {dados.docente_id}, não foi encontrado")
 
-    nova_turma = Turma(
-        disciplina_id=dados.disciplina_id,
-        docente_id=dados.docente_id,
-        semestre=dados.semestre,
-        vagas_total=dados.vagas_total,
-        vagas_disponiveis=dados.vagas_total,
-        codigo=dados.codigo,
-    )
+        # verificar se a disciplina existe
+        disciplina_existe = db.query(Disciplina).filter(Disciplina.id == dados.disciplina_id).first()
+        if not disciplina_existe:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"A disciplina com Dados {dados.disciplina_id}, não foi encontrado")
 
-    db.add(nova_turma)
-    db.commit()
-    db.refresh(nova_turma)
+        nova_turma = Turma(
+            disciplina_id=dados.disciplina_id,
+            docente_id=dados.docente_id,
+            semestre=dados.semestre,
+            vagas_total=dados.vagas_total,
+            vagas_disponiveis=dados.vagas_total,
+            codigo=dados.codigo,
+        )
 
-    return nova_turma
+        db.add(nova_turma)
+        db.commit()
+        db.refresh(nova_turma)
+
+        return nova_turma
+    
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Erro interno ao cadastrar a turma no banco de dados.")

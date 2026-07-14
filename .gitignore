@@ -26,6 +26,7 @@ dist-ssr
 
 # Python / FastAPI (back/)
 .venv/
+venv/
 *__pycache__/
 *.pyc
 
