@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 
 # o que o cliente ENVIA pra criar (sem id — o banco gera)
@@ -15,7 +15,7 @@ class NoticiaCreate(BaseModel):
     titulo: str = Field(min_length=2)
     descricao: str = Field(min_length=2)
     link: str = Field(min_length=4)
-    imagem_url: str | None = None   # opcional — pode vir vazio
+    imagem_url: HttpUrl | None = None   # opcional — pode vir vazio
 
 
 # o que a API DEVOLVE (com o id gerado)
