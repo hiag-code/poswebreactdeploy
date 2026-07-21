@@ -22,3 +22,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.venv
+
+# Python / FastAPI (back/)
+.venv/
+venv/
+*__pycache__/
+*.pyc
+
+# Segredos / ambiente local — NUNCA commitar
+.env
+.env.local
+.env.*.local

@@ -42,11 +42,11 @@ const processos = [
 
 export default function ProcessosSeletivos() {
   return (
-    <section className="bg-green-100 flex flex-col items-center justify-center py-10 width: fit-content height: fit-content">
+    <section className="bg-green-100 flex flex-col w-screen items-center justify-center py-10">
       <h4 className="text-green-800 text-sm font-semibold pb-2">EDITAIS E PROCESSOS</h4>
       <h1 className="font-bold text-4xl mb-10">Processos Seletivos Abertos</h1>
 
-      <div className="flex flex-wrap justify-center gap-8 width: fit-content height: fit-content">
+      <div className="w-screen flex flex-wrap justify-center gap-8">
         {processos.map((p, index) => (
           <CardTexto
             key={index}
