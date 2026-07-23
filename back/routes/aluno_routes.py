@@ -1,14 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
 
 from db.database import get_db
 from models.aluno_model import Aluno
 from models.user_model import Usuario          # novo para criar o login do aluno (Usuario) no momento da criação do Aluno
-from schemas.aluno_schema import AlunoCreate, AlunoResponse
-from core.security import hash_password          # novo para hashear a senha do aluno no momento da criação do login (Usuario)
+from schemas.aluno_schema import AlunoCreate, AlunoResponse, AlunoUpdate
+from core.security import hash_password, get_current_user, require_admin        # novo para hashear a senha do aluno no momento da criação do login (Usuario)
+from crud import CRUDBase
 
 router = APIRouter(prefix="/alunos", tags=["Alunos"])
 
+aluno_crud = (CRUDBase(Aluno))
 
 @router.post(
     "/",
@@ -49,8 +52,43 @@ def criar_aluno(dados: AlunoCreate, db: Session = Depends(get_db)):
     db.refresh(aluno)
     return aluno
 
+#buscar aluno por matricula
+#nivel de permissao: qualquer usuario cadastrado
+@router.get("/{matricula}", response_model=list[AlunoResponse], summary="busca de aluno")
+def buscar_aluno(matricula: str, db: Session = Depends(get_db), current_user : dict = Depends(get_current_user)):
+    aluno = aluno_crud.get_by_id(db, id=matricula)
+    if not aluno:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado"
+        )
+    return aluno
 
 @router.get("/", response_model=list[AlunoResponse], summary="Listar alunos")
 def listar_alunos(db: Session = Depends(get_db)):
     """Lista todos os alunos cadastrados."""
     return db.query(Aluno).all()
+
+@router.put("/{matricula}", response_model=AlunoResponse, summary="atualizar dados")
+def atualizar_aluno(matricula: str, dados: AlunoUpdate, db : Session = Depends(get_db), current_user : dict = Depends(require_admin)):
+    aluno_atualizado = aluno_crud.update(db, id=matricula, obj_in=dados.model_dump(exclude_unset=True))
+
+    if not aluno_atualizado:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado"
+        )
+    
+    return aluno_atualizado
+
+@router.delete("/{matricula}", status_code=status.HTTP_204_NO_CONTENT)
+def deletar_aluno(matricula : str, db : Session = Depends(get_db), admin_user : dict = Depends(require_admin)):
+    sucesso = aluno_crud.delete(db, id=matricula)
+
+    if not sucesso:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Aluno não encontrado"
+        )
+
+    return None
