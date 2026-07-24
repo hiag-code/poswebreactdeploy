@@ -1,14 +1,17 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from typing import List
 
 from db.database import get_db
 from models.turma_model import Turma
 from models.disciplina_model import Disciplina
 from models.docente_model import Docente
-from schemas.turma_schema import TurmaCreate, TurmaResponse
+from schemas.turma_schema import TurmaCreate, TurmaResponse, TurmaUpdate
 from core.security import require_admin
+from crud import CRUDBase
 
 router = APIRouter(prefix="/turmas", tags=["Turmas"])
+turma_crud = CRUDBase(Turma)
 
 
 @router.post(
@@ -46,3 +49,27 @@ def criar_turma(dados: TurmaCreate, db: Session = Depends(get_db), logado: dict 
     db.refresh(nova_turma)
 
     return nova_turma
+
+@router.get("", response_model=List[TurmaResponse])
+def listar_turmas(db: Session = Depends(get_db)):
+    return turma_crud.get_all(db)
+
+@router.get("/{id}", response_model=TurmaResponse)
+def buscar_turma(id: int, db: Session = Depends(get_db)):
+    turma = turma_crud.get_by_id(db, id=id)
+    if not turma:
+        raise HTTPException(status_code=404, detail="Turma não encontrada.")
+    return turma
+
+@router.put("/{id}", response_model=TurmaResponse)
+def atualizar_turma(id: int, dados: TurmaUpdate, db: Session = Depends(get_db), admin = Depends(require_admin)):
+    turma = turma_crud.update(db, id=id, obj_in=dados.model_dump(exclude_unset=True))
+    if not turma:
+        raise HTTPException(status_code=404, detail="Turma não encontrada.")
+    return turma
+
+@router.delete("/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def deletar_turma(id: int, db: Session = Depends(get_db), admin = Depends(require_admin)):
+    if not turma_crud.delete(db, id=id):
+        raise HTTPException(status_code=404, detail="Turma não encontrada.")
+    return None

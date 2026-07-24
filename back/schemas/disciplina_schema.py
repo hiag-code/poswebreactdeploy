@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-
+from typing import Optional
 
 # o que o cliente ENVIA pra criar (sem id — o banco gera)
 class DisciplinaCreate(BaseModel):
@@ -17,6 +17,11 @@ class DisciplinaCreate(BaseModel):
     carga_horaria: int = Field(gt=0)
     ementa: str | None = None
 
+class DisciplinaUpdate(BaseModel):
+    nome: Optional[str] = Field(min_length=2)
+    codigo: Optional[str] = Field(min_length=2)
+    carga_horaria: Optional[int] = Field(gt=0)
+    ementa: Optional[str] | None = None    
 
 # o que a API DEVOLVE (com o id gerado)
 class DisciplinaResponse(BaseModel):

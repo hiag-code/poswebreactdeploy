@@ -54,7 +54,7 @@ def criar_aluno(dados: AlunoCreate, db: Session = Depends(get_db)):
 
 #buscar aluno por matricula
 #nivel de permissao: qualquer usuario cadastrado
-@router.get("/{matricula}", response_model=list[AlunoResponse], summary="busca de aluno")
+@router.get("/{matricula}", response_model=AlunoResponse, summary="busca de aluno")
 def buscar_aluno(matricula: str, db: Session = Depends(get_db), current_user : dict = Depends(get_current_user)):
     aluno = aluno_crud.get_by_id(db, id=matricula)
     if not aluno:
