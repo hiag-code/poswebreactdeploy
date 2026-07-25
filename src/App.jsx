@@ -8,15 +8,21 @@ import Noticias from "./components/Noticias"
 import Numeros from "./components/Numeros"
 import Footer from "./components/Footer"
 import TituloTabela from "./components/TituloTabela"
-import Alunos from "./pages/alunos/Aluno"
-import ModeloPage from "./pages/modelo/AlunoPage";
-import ModeloCreatePage from "./pages/modelo/AlunoCreatePage"
-import ModeloShowPage from "./pages/modelo/AlunoShowPage"
-import ModeloEditPage from "./pages/modelo/AlunoEditPage"
-import Ouvidoria from "./pages/ouvidoria/OuvidoriaPage";
+import Aluno from "./pages/aluno/Aluno"
+import AlunoPage from "./pages/aluno/AlunoPage"
+import AlunoCreatePage from "./pages/aluno/AlunoCreatePage"
+import AlunoShowPage from "./pages/aluno/AlunoShowPage"
+import AlunoEditPage from "./pages/aluno/AlunoEditPage"
 import NoticiaPage from "./pages/noticias/NoticiaPage"
-import DocentePage from "./pages/docente/DocentePage";
-import InscricaoPage from "./pages/inscricoes/InscricoesPage";
+import DocentePage from "./pages/docente/DocentePage"
+import EditalPage from "./pages/editais/EditalPage"
+import NoticiasBlog from "./pages/noticias/NoticiasBlog"
+import NoticiaShowPage from "./pages/noticias/NoticiaShowPage"
+import NoticiaEditPage from "./pages/noticias/NoticiaEditPage"
+import NoticiaCreatePage from "./pages/noticias/NoticiaCreatePage"
+import LoginPage from "./pages/login/LoginPage"
+import { AuthProvider } from './pages/login/AuthContext'
+import ProtectedRoute from "./pages/login/ProtectedRoute"
 
 
 function Home() {
@@ -40,16 +46,22 @@ export default function App() {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/modelo" element={<ModeloPage />} />
-        <Route path="/modelo/novo" element={<ModeloCreatePage />} />
-        <Route path="/modelo/:matricula" element={<ModeloShowPage />} />
-        <Route path="/modelo/:matricula/editar" element={<ModeloEditPage />} />
-        <Route path="/aluno" element={<Alunos />} />
-        <Route path="/ouvidoria" element={<Ouvidoria/>} />
+        <Route path="/aluno" element={<Aluno />} />
+        <Route path="/aluno/novo" element={<AlunoCreatePage />} />
+        <Route path="/aluno/show" element={<AlunoShowPage />} />
+        <Route path="/aluno/edit" element={<AlunoEditPage />} />
         <Route path="/noticias" element={<NoticiaPage />} />
         <Route path="/docentes" element={<DocentePage />} />
-        <Route path="/inscricoes" element={<InscricaoPage />} />
-        <Route path="/inscricoes/:id" element={<InscricaoPage />} />
+        <Route path="/editais" element={<EditalPage />} />
+        <Route path="/noticiasleitura" element={<NoticiasBlog />} />
+        <Route path="/noticia/:id" element={<NoticiaShowPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/noticias" element={<NoticiaPage />} />
+          <Route path="/noticias/nova" element={<NoticiaCreatePage />} />
+          <Route path="/noticias/edit" element={<NoticiaEditPage />} />
+          </Route>
 
       </Routes>
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { buscarAlunoPorMatricula } from "./alunos.service";
 
-export default function AlunoShow() {
+export default function AlunoShowPage() {
   const { matricula } = useParams();
   const [aluno, setAluno] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,6 @@ export default function AlunoShow() {
         <p><strong>Matrícula:</strong> {aluno.matricula}</p>
         <p><strong>Nome:</strong> {aluno.nome}</p>
         <p><strong>Email:</strong> {aluno.email}</p>
-        <p><strong>Status:</strong> {aluno.status}</p>
       </div>
     </div>
   );

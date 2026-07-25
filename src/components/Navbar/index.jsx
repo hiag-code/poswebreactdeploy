@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import Logo from "../Logo";
 
 export default function Navbar() {
@@ -17,32 +18,35 @@ export default function Navbar() {
       </div>
 
       {/* Menu de links */}
-      <div className="flex flex-row gap-5 items-center">
-        <a href="inicio" className="hover:text-gray-200">
+            <div className="flex flex-row gap-5 items-center">
+
+        <Link to="/" className="hover:text-gray-500">
           Início
-        </a>
+        </Link>
 
-        <div className="relative group">
-          <button className="flex items-center space-x-1 hover:text-gray-200">
-            <span>Sobre o Curso</span>
-            <span>▾</span>
-          </button>
-          {/* Aqui poderia vir dropdown, se precisar */}
-        </div>
+        <Link to="/noticiasleitura" className="hover:text-gray-500">
+          Notícias
+        </Link>
 
-        <a href="processo seletivo" className="hover:text-gray-200">
-          Processo Seletivo
-        </a>
-        <a href="contato" className="hover:text-gray-200">
-          Contato
-        </a>
+        <Link to="/aluno" className="hover:text-gray-500">
+          Alunos
+        </Link>
 
-        {/* Botão Portal do Aluno */}
+        <Link to="/docentes" className="hover:text-gray-500">
+          Docentes
+        </Link>
+
+        <Link to="/editais" className="hover:text-gray-500">
+          Editais
+        </Link>
+
+
+        {/* Botão Login*/}
         <a
-          href="portal do aluno"
+          href="./#/login"
           className="bg-green-600 px-5 py-2 rounded font-semibold hover:bg-green-500 text-white"
         >
-          Portal do Aluno
+          Login
         </a>
       </div>
     </nav>

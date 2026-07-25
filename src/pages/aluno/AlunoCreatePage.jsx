@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { criarOuvidoria } from "./ouvidoria.service";
+import { criarAluno } from "./alunos.service";
 
-export default function OuvidoriaCreatePage() {
+export default function AlunoCreatePage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    id: "",
-    autor: "",
-    texto: ""
+    matricula: "",
+    nome: "",
+    email: ""
   });
 
   const [loading, setLoading] = useState(false);
@@ -22,11 +22,11 @@ export default function OuvidoriaCreatePage() {
 
     try {
       setLoading(true);
-      await criarOuvidoria(form);
-      navigate("/ouvidorias");
+      await criarAluno(form);
+      navigate("/modelo");
     } catch (error) {
       console.error(error.response?.data || error.message);
-      alert("Erro ao criar ouvidoria");
+      alert("Erro ao criar aluno");
     } finally {
       setLoading(false);
     }
@@ -34,31 +34,31 @@ export default function OuvidoriaCreatePage() {
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-6">Nova Ouvidoria</h1>
+      <h1 className="text-xl font-bold mb-6">Novo Aluno</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
         <input
-          name="id"
-          placeholder="id"
-          value={form.id}
+          name="matricula"
+          placeholder="Matrícula"
+          value={form.matricula}
           onChange={handleChange}
           required
           className="border p-2 rounded"
         />
 
         <input
-          name="autor"
-          placeholder="autor"
-          value={form.autor}
+          name="nome"
+          placeholder="Nome"
+          value={form.nome}
           onChange={handleChange}
           required
           className="border p-2 rounded"
         />
 
         <input
-          name="texto"
-          placeholder="texto"
-          value={form.texto}
+          name="email"
+          placeholder="Email"
+          value={form.email}
           onChange={handleChange}
           required
           className="border p-2 rounded"

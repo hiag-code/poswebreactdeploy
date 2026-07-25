@@ -3,6 +3,7 @@ import img04 from "../../assets/imagens/04.png";
 import img05 from "../../assets/imagens/05.png";
 import CardNoticias from "./CardNoticias";
 
+
 const noticias = [
   {
     imagem: img03,
@@ -47,7 +48,7 @@ export default function Noticias() {
         </div>
 
         <a
-          href="#"
+          href= "./#/noticiasleitura"
           className="flex items-center gap-2 text-green-700 font-semibold hover:underline"
         >
           Ver Todas

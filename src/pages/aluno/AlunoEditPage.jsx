@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { buscarOuvidoriaPorId, atualizarOuvidoria } from "./ouvidoria.service";
+import { buscarAlunoPorMatricula, atualizarAluno } from "./alunos.service";
 
-export default function OuvidoriaEditPage() {
-  const { id } = useParams();
+export default function AlunoEditPage() {
+  const { matricula } = useParams();
   const navigate = useNavigate();
 
   const [form, setForm] = useState(null);
@@ -12,7 +12,7 @@ export default function OuvidoriaEditPage() {
   useEffect(() => {
     async function carregar() {
       try {
-        const data = await buscarOuvidoriaPorId(id);
+        const data = await buscarAlunoPorMatricula(matricula);
         setForm(data);
       } catch (error) {
         console.error(error.response?.data || error.message);
@@ -22,7 +22,7 @@ export default function OuvidoriaEditPage() {
     }
 
     carregar();
-  }, [id]);
+  }, [matricula]);
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -32,32 +32,32 @@ export default function OuvidoriaEditPage() {
     e.preventDefault();
 
     try {
-      await atualizarOuvidoria(id, form);
-      navigate("/ouvidorias");
+      await atualizarAluno(matricula, form);
+      navigate("/modelo");
     } catch (error) {
       console.error(error.response?.data || error.message);
-      alert("Erro ao atualizar ouvidoria");
+      alert("Erro ao atualizar aluno");
     }
   }
 
   if (loading) return <p className="p-6">Carregando...</p>;
-  if (!form) return <p className="p-6">ouvidoria não encontrado.</p>;
+  if (!form) return <p className="p-6">Aluno não encontrado.</p>;
 
   return (
     <div className="p-6">
-      <h1 className="text-xl font-bold mb-6">Editar ouvidoria</h1>
+      <h1 className="text-xl font-bold mb-6">Editar Aluno</h1>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md">
         <input
-          name="autor"
-          value={form.autor}
+          name="nome"
+          value={form.nome}
           onChange={handleChange}
           className="border p-2 rounded"
         />
 
         <input
-          name="texto"
-          value={form.texto}
+          name="email"
+          value={form.email}
           onChange={handleChange}
           className="border p-2 rounded"
         />
