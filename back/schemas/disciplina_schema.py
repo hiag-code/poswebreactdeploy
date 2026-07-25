@@ -18,9 +18,9 @@ class DisciplinaCreate(BaseModel):
     ementa: str | None = None
 
 class DisciplinaUpdate(BaseModel):
-    nome: Optional[str] = Field(min_length=2)
-    codigo: Optional[str] = Field(min_length=2)
-    carga_horaria: Optional[int] = Field(gt=0)
+    nome: Optional[str] = Field(min_length=2, default=None)
+    codigo: Optional[str] = Field(min_length=2, default=None)
+    carga_horaria: Optional[int] = Field(gt=0, default=None)
     ementa: Optional[str] | None = None    
 
 # o que a API DEVOLVE (com o id gerado)

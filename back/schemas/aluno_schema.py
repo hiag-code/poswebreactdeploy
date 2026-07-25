@@ -43,4 +43,5 @@ class AlunoResponse(BaseModel):
     email: str
     data_nascimento: date
     status: str
+    
 
