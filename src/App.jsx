@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+
+>>>>>>> 742cd94745794052baf896e1903976c05d7220f6
 import { Routes, Route } from "react-router-dom"
 import Header from "./components/Header"
 import Navbar from "./components/Navbar"
@@ -69,3 +73,7 @@ export default function App() {
     </>
   );
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 742cd94745794052baf896e1903976c05d7220f6

@@ -23,6 +23,12 @@ export const atualizarNoticia = async (id, dados) => {
 };
 
 export const excluirNoticia = async (id) => {
+<<<<<<< HEAD
     await api.delete(`/noticias/${id}`);
     return true;
 }
+=======
+  await api.delete(`/noticias/${id}`);
+  return true;
+};
+>>>>>>> 742cd94745794052baf896e1903976c05d7220f6
