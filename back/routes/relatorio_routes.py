@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, status
+from fastapi import APIRouter, Depends, Query, HTTPException, Request, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -25,6 +25,7 @@ router = APIRouter(
 
 @router.get("/turmas", summary="Relatório de turmas")
 def relatorio_turmas(
+    request: Request,
     formato: str = Query(default="json"),
     db: Session = Depends(get_db),
     usuario: dict = Depends(require_admin),
@@ -35,6 +36,7 @@ def relatorio_turmas(
     """
 
     try:
+        accept = request.headers.get("accept", "").lower()
         relatorio = (
             db.query(
                 Turma.id.label("turma_id"),
@@ -68,7 +70,7 @@ def relatorio_turmas(
                 "vagas_disponiveis": item.vagas_disponiveis,
             })
 
-        if formato.lower() == "csv":
+        if formato.lower() == "csv" or "text/csv" in accept:
             output = StringIO(newline="")
             writer = csv.writer(output)
 
