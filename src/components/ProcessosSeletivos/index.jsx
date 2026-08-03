@@ -26,7 +26,7 @@ export default function ProcessosSeletivos() {
   }, []);
 
   return (
-    <section className="bg-green-100 flex flex-col items-center justify-center py-8 md:py-14 w-full">
+    <section className="bg-green-100 flex flex-col items-center justify-center py-8 md:py-14 w-full overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
         
         {/* Cabeçalho */}
@@ -40,7 +40,6 @@ export default function ProcessosSeletivos() {
             </h1>
           </div>
 
-          {/* Botão funcional para abrir a página completa de editais */}
           <Link
             to="/editais"
             className="text-green-800 font-bold hover:underline flex items-center gap-1 transition py-1 px-3 rounded-lg hover:bg-green-200/60"
@@ -59,10 +58,16 @@ export default function ProcessosSeletivos() {
             <p className="text-gray-500 font-medium">Nenhum edital publicado no momento.</p>
           </div>
         ) : (
-          /* Grid Responsiva (1 coluna no celular, 2 em tablets, 3 no PC) */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-items-center">
+          /* 
+            MOBILE: 'flex overflow-x-auto' deixa um do lado do outro com deslize (swipe)
+            DESKTOP (md): 'md:grid md:grid-cols-3' volta ao padrão normal de 3 colunas
+          */
+          <div className="flex md:grid md:grid-cols-3 gap-4 md:gap-8 overflow-x-auto md:overflow-visible pb-4 md:pb-0 snap-x snap-mandatory scroll-smooth w-full">
             {editais.map((edital) => (
-              <div key={edital.id} className="w-full flex justify-center">
+              <div 
+                key={edital.id} 
+                className="min-w-[85vw] sm:min-w-[340px] md:min-w-full snap-center flex flex-col"
+              >
                 <CardTexto
                   titulo={edital.titulo}
                   descricao={edital.descricao}
