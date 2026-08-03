@@ -5,10 +5,12 @@ from sqlalchemy.exc import SQLAlchemyError
 from db.database import get_db
 from models.docente_model import Docente
 from models.user_model import Usuario
-from schemas.docente_schema import DocenteCreate, DocenteResponse
-from core.security import hash_password
+from schemas.docente_schema import DocenteCreate, DocenteResponse, DocenteUpdate
+from core.security import hash_password, require_admin
+from crud import CRUDBase
 
 router = APIRouter(prefix="/docentes", tags=["Docentes"])
+docente_crud = CRUDBase(Docente)
 
 
 @router.post(
@@ -17,7 +19,7 @@ router = APIRouter(prefix="/docentes", tags=["Docentes"])
     status_code=status.HTTP_201_CREATED,
     summary="Cadastrar docente",
 )
-def criar_docente(dados: DocenteCreate, db: Session = Depends(get_db)):
+def criar_docente(dados: DocenteCreate, db: Session = Depends(get_db), admin_user : dict = Depends(require_admin)):
     """Cadastra um docente e cria o login dele (Usuario com role `docente`).
 
     Recusa CPF ou email já cadastrado (409).
@@ -60,8 +62,36 @@ def criar_docente(dados: DocenteCreate, db: Session = Depends(get_db)):
 @router.get("/", response_model=list[DocenteResponse], summary="Listar docentes")
 def listar_docentes(db: Session = Depends(get_db)):
     """Lista todos os docentes cadastrados."""
-    try:
-        return db.query(Docente).all()
-    
-    except SQLAlchemyError:
-        raise HTTPException(status_code=500, detail="Erro interno ao buscar a lista de docentes.")
+    return db.query(Docente).all()
+
+@router.get("/{id}", response_model=DocenteResponse)
+def buscar_docente(id: int, db: Session = Depends(get_db)):
+    docente = docente_crud.get_by_id(db, id=id)
+    if not docente:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Docente não encontrado"
+        )
+    return docente
+
+@router.put("/{id}", response_model=DocenteResponse, summary="atualizar dados")
+def atualizar_docente(id : int, dados : DocenteUpdate, db: Session = Depends(get_db), admin_user: dict = Depends(require_admin)):
+    docente = docente_crud.update(db, id=id, obj_in=dados.model_dump(exclude_unset=True))
+
+    if not docente: 
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Docente não encontrado"
+        )
+
+    return docente
+
+@router.delete("/{id}", status_code=status.HTTP_402_PAYMENT_REQUIRED)
+def deletar_docente(id: int, db: Session = Depends(get_db), admin : dict = Depends(require_admin)):
+    if not docente_crud.delete(db, id=id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Docente não encontrado"
+        )
+
+    return None

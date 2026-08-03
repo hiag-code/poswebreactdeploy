@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-
+from typing import Optional
 
 # o que o cliente ENVIA pra criar (sem id — o banco gera)
 class EditalCreate(BaseModel):
@@ -15,6 +15,11 @@ class EditalCreate(BaseModel):
     descricao: str = Field(min_length=2)
     link: str = Field(min_length=4)
 
+class EditalUpdate(BaseModel):
+    titulo: Optional[str] = Field(min_length=2, default=None)
+    descricao: Optional[str] = Field(min_length=2, default=None)
+    link: Optional[str] = Field(min_length=4, default=None)
+    
 
 # o que a API DEVOLVE (com o id gerado)
 class EditalResponse(BaseModel):

@@ -1,8 +1,17 @@
 from datetime import date
 from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional
 
 
-class AlunoCreate(BaseModel):
+#separado para utlização do CRUDbase
+class AlunoBase(BaseModel):
+    nome: str = Field(min_length=1)
+    cpf: str = Field(min_length=11, max_length=14)
+    email: str = Field(min_length=1)
+    data_nascimento: date
+ 
+
+class AlunoCreate(AlunoBase):
     model_config = ConfigDict(json_schema_extra={
         "example": {
             "nome": "Maria Souza",
@@ -13,12 +22,16 @@ class AlunoCreate(BaseModel):
         }
     })
 
-    nome: str = Field(min_length=1)
-    cpf: str = Field(min_length=11, max_length=14)
-    email: str = Field(min_length=1)
-    data_nascimento: date
     senha: str = Field(min_length=6)  # senha para o login do aluno (Usuario)
 
+
+#para alteracao dos dados do aluno
+class AlunoUpdate(BaseModel):
+    nome: Optional[str] = None
+    cpf: Optional[str] = None
+    email: Optional[str] = None
+    data_nascimento: Optional[date] = None
+    senha: Optional[str] = None
 
 # o que a API DEVOLVE (sem a senha!)
 class AlunoResponse(BaseModel):
@@ -30,3 +43,5 @@ class AlunoResponse(BaseModel):
     email: str
     data_nascimento: date
     status: str
+    
+
