@@ -15,10 +15,14 @@ export default function LinhaTabela({
   
   const renderizarCelula = (coluna) => {
     
+    if (coluna.render) {
+      return coluna.render(item);
+    }
+
+    // 2. Se passou algo no customRenderers
     if (customRenderers[coluna.campo]) {
       return customRenderers[coluna.campo](item);
     }
-
     
     switch (coluna.tipo) {
       case 'foto':

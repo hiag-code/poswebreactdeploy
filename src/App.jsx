@@ -1,11 +1,12 @@
-
 import { Routes, Route } from "react-router-dom"
+import ProtectedRoute from "./pages/login/PortectedRoute"
+
 import Header from "./components/Header"
 import Navbar from "./components/Navbar"
 import Hero from "./components/Hero"
 import Features from "./components/Features"
 import ProcessosSeletivos from "./components/ProcessosSeletivos"
-import Noticias from "./components/Noticias"
+import Noticias from "./components/Noticias/Noticias"
 import Numeros from "./components/Numeros"
 import Footer from "./components/Footer"
 import TituloTabela from "./components/TituloTabela"
@@ -19,24 +20,24 @@ import ModeloShowPage from "./pages/modelo/AlunoShowPage"
 import ModeloEditPage from "./pages/modelo/AlunoEditPage"
 import Ouvidoria from "./pages/ouvidoria/OuvidoriaPage";
 import NoticiaPage from "./pages/noticias/NoticiaPage"
-import DocentePage from "./pages/Docente/DocentePage";
+import DocentePage from "./pages/docente/DocentePage";
 import InscricaoPage from "./pages/inscricoes/InscricoesPage";
-import DocenteCreatePage from "./pages/Docente/DocenteCreatePage";
-import DocenteShowPage from "./pages/Docente/DocenteShowPage";
-import DocenteEditPage from "./pages/Docente/DocenteEditPage";
+import DocenteCreatePage from "./pages/docente/DocenteCreatePage";
+import DocenteShowPage from "./pages/docente/DocenteShowPage";
+import DocenteEditPage from "./pages/docente/DocenteEditPage";
 import NoticiaShowPage from "./pages/noticias/NoticiaShowPage"
 import NoticiaCreatePage from "./pages/noticias/NoticiaCreatePage"
 import NoticiaEditPage from "./pages/noticias/NoticiaEditPage";
-import OuvidoriaShowPage from "./pages/ouvidoria/OuvidoriaShowPage";
-import OuvidoriaEditPage from "./pages/ouvidoria/OuvidoriaEditePage";
-import OuvidoriaCreatePage from "./pages/ouvidoria/OuvidoriaCreatepage";
+// import OuvidoriaShowPage from "./pages/ouvidoria/OuvidoriaShowPage";
+// import OuvidoriaEditPage from "./pages/ouvidoria/OuvidoriaEditePage";
+// import OuvidoriaCreatePage from "./pages/ouvidoria/OuvidoriaCreatepage";
 import EditalPage from "./pages/editais/EditalPage";
 import EditalCreatePage from "./pages/editais/EditalCreatePage";
 import EditalShowPage from "./pages/editais/EditalShowPage";
 import EditalEditPage from "./pages/editais/EditalEditPage";
-import InscricoesCreatePage from "./pages/inscricoes/InscricoesCreatePage";
-import InscricoesEditPage from "./pages/inscricoes/InscricoesEditPage";
-import InscricoesShowPage from "./pages/inscricoes/InscricoesShowPage";
+// import InscricoesCreatePage from "./pages/inscricoes/InscricoesCreatePage";
+// import InscricoesEditPage from "./pages/inscricoes/InscricoesEditPage";
+// import InscricoesShowPage from "./pages/inscricoes/InscricoesShowPage";
 import DisciplinasPage from "./pages/disciplinas/Disciplina";
 import DisciplinaVisualizar from "./pages/disciplinas/disciplinavisualizar";
 import DisciplinasEditPage from "./pages/disciplinas/DisciplinaEditPage";
@@ -45,6 +46,7 @@ import UsuarioPage from "./pages/usuarios/UsuarioPage";
 import UsuarioEditPage from "./pages/usuarios/UsuarioEditPage";
 import UsuarioCreatePage from "./pages/usuarios/UsuariosCreatePage";
 import UsuarioShowPage from "./pages/usuarios/UsuarioShowPage";
+import LoginPage from "./pages/login/LoginPage"
 
 function Home() {
   return (
@@ -72,16 +74,23 @@ export default function App() {
         <Route path="/modelo/:matricula" element={<ModeloShowPage />} />
         <Route path="/modelo/:matricula/editar" element={<ModeloEditPage />} />
 
-        <Route path="/ouvidoria" element={<Ouvidoria />} />
+        {/* <Route path="/ouvidoria" element={<Ouvidoria />} />
         <Route path="/ouvidorias" element={<Ouvidoria />} />
         <Route path="/ouvidorias/novo" element={<OuvidoriaCreatePage />} />
         <Route path="/ouvidorias/:id" element={<OuvidoriaShowPage />} />
-        <Route path="/ouvidorias/:id/editar" element={<OuvidoriaEditPage />} />
+        <Route path="/ouvidorias/:id/editar" element={<OuvidoriaEditPage />} /> */}
 
-        <Route path="/aluno" element={<Alunos />} />
+        <Route
+          path="/aluno"
+          element={
+            <ProtectedRoute perfisPermitidos={["estudante", "docente", "usuario"]}>
+              <Alunos />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/aluno/novo" element={<AlunoCreate />} />
-        <Route path="/aluno/:matricula" element={<AlunoShow />} />
-        <Route path="/aluno/:matricula/editar" element={<AlunoEdit />} />
+        <Route path="/aluno/:id" element={<AlunoShow />} />
+        <Route path="/aluno/:id/editar" element={<AlunoEdit />} />
 
         <Route path="/noticias" element={<NoticiaPage />} />
         <Route path="/noticias/novo" element={<NoticiaCreatePage />} />
@@ -93,15 +102,15 @@ export default function App() {
         <Route path="/docentes/:id" element={<DocenteShowPage />} />
         <Route path="/docentes/:id/editar" element={<DocenteEditPage />} />
 
-        <Route path="/usuarios" element={<UsuarioPage />} />
+        {/* <Route path="/usuarios" element={<UsuarioPage />} />
         <Route path="/usuarios/:id" element={<UsuarioShowPage />} />
         <Route path="/usuarios/novo" element={<UsuarioCreatePage />} />
-        <Route path="/usuarios/:id/editar" element={<UsuarioEditPage />} />
+        <Route path="/usuarios/:id/editar" element={<UsuarioEditPage />} /> */}
 
-        <Route path="/inscricoes" element={<InscricaoPage />} />
+        {/* <Route path="/inscricoes" element={<InscricaoPage />} />
         <Route path="/inscricoes/novo" element={<InscricoesCreatePage />} />
         <Route path="/inscricoes/:id" element={<InscricoesShowPage />} />
-        <Route path="/inscricoes/:id/editar" element={<InscricoesEditPage />} />
+        <Route path="/inscricoes/:id/editar" element={<InscricoesEditPage />} /> */}
 
         <Route path="/editais" element={<EditalPage />} />
         <Route path="/editais/novo" element={<EditalCreatePage />} />
@@ -112,6 +121,9 @@ export default function App() {
         <Route path="/disciplinas/:id" element={<DisciplinaVisualizar />} />
         <Route path="/disciplinas/:id/editar" element={<DisciplinasEditPage />}
         />
+
+        <Route path="/login" element={<LoginPage />} />
+
         <Route path="/disciplinas/nova" element={<DisciplinaCreatePage />} />
       </Routes>
 

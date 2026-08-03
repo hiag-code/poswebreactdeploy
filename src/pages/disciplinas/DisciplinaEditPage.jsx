@@ -1,7 +1,7 @@
 // src/pages/disciplinas/DisciplinaEditPage.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { buscarDisciplinaPorId, atualizarDisciplina } from "./Disciplinas.service";
+import { buscar_disciplina, atualizar_disciplina } from "./Disciplinas.service";
 
 export default function DisciplinaEditPage() {
   const { id } = useParams();
@@ -14,8 +14,13 @@ export default function DisciplinaEditPage() {
   useEffect(() => {
     async function carregar() {
       try {
-        const data = await buscarDisciplinaPorId(id);
-        setForm(data);
+        const data = await buscar_disciplina(id);
+        setForm({
+          codigo: data.codigo,
+          nome: data.nome,
+          carga_horaria: data.carga_horaria,
+          ementa: data.ementa
+        });
       } catch (error) {
         console.error(error.response?.data || error.message);
         alert("Erro ao carregar disciplina");
@@ -36,7 +41,7 @@ export default function DisciplinaEditPage() {
 
     try {
       setSaving(true);
-      await atualizarDisciplina(id, form);
+      await atualizar_disciplina(id, form);
       alert("Disciplina atualizada com sucesso!");
       navigate("/disciplinas");
     } catch (error) {

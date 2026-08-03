@@ -1,67 +1,85 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import CardTexto from "../CardTexto";
-
-const processos = [
-  {
-    titulo: "Edital 001/2024",
-    descricao: "Processo seletivo para ingresso no curso de Pós-Graduação em Desenvolvimento Web - Turma 2024.2.",
-    status: "aberto",
-    badgeColor: "bg-red-100 text-red-600",
-    iconColor: "fill-red-600",
-    linkColor: "text-green-800",
-    shadowColor: "#006D38",
-    deadline: "Inscrições até: 15/02/2024",
-    linkText: "Ver Edital Completo",
-    link: "#"
-  },
-  {
-    titulo: "Edital 002/2024",
-    descricao: "Seleção de Bolsistas para Projetos de Pesquisa e Extensão em Desenvolvimento Web",
-    status: "em breve",
-    badgeColor: "bg-yellow-100 text-yellow-600",
-    iconColor: "fill-yellow-500",
-    linkColor: "text-yellow-500",
-    shadowColor: "#FF9F2E",
-    deadline: "Previsão: Março/2024",
-    linkText: "Mais Informações",
-    link: "#"
-  },
-  {
-    titulo: "Edital 010/2023",
-    descricao: "Processo seletivo - Turma 2023.2 - Resultado Final Publicado",
-    status: "encerrado",
-    badgeColor: "bg-gray-100 text-gray-600",
-    iconColor: "fill-gray-500",
-    linkColor: "text-gray-500",
-    shadowColor: "#728495",
-    deadline: "Encerrado em: 20/12/2023",
-    linkText: "Ver Resultado",
-    link: "#"
-  }
-];
+import { buscarEditais } from "../../pages/editais/editais.service";
 
 export default function ProcessosSeletivos() {
-  return (
-    <section className="bg-green-100 flex flex-col items-center justify-center py-10 width: fit-content height: fit-content">
-      <h4 className="text-green-800 text-sm font-semibold pb-2">EDITAIS E PROCESSOS</h4>
-      <h1 className="font-bold text-4xl mb-10">Processos Seletivos Abertos</h1>
+  const [editais, setEditais] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-      <div className="flex flex-wrap justify-center gap-8 width: fit-content height: fit-content">
-        {processos.map((p, index) => (
-          <CardTexto
-            key={index}
-            titulo={p.titulo}
-            descricao={p.descricao}
-            status={p.status}
-            badgeColor={p.badgeColor}
-            iconColor={p.iconColor}
-            linkColor={p.linkColor}
-            shadowColor={p.shadowColor}
-            deadline={p.deadline}
-            linkText={p.linkText}
-            link={p.link}
-          />
-        ))}
+  useEffect(() => {
+    async function carregarEditais() {
+      try {
+        setLoading(true);
+        const data = await buscarEditais();
+        
+        // Pega apenas os 3 editais mais recentes
+        setEditais(data.slice(0, 3));
+      } catch (error) {
+        console.error("Erro ao carregar editais da Home:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregarEditais();
+  }, []);
+
+  return (
+    <section className="bg-green-100 flex flex-col items-center justify-center py-8 md:py-14 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 w-full">
+        
+        {/* Cabeçalho */}
+        <div className="flex flex-col md:flex-row md:justify-between items-center mb-6 md:mb-10 gap-4 text-center md:text-left">
+          <div>
+            <h4 className="text-green-800 text-xs sm:text-sm font-bold tracking-wider uppercase">
+              EDITAIS E PROCESSOS
+            </h4>
+            <h1 className="font-bold text-2xl sm:text-3xl md:text-4xl text-gray-900 mt-1">
+              Processos Seletivos Abertos
+            </h1>
+          </div>
+
+          {/* Botão funcional para abrir a página completa de editais */}
+          <Link
+            to="/editais"
+            className="text-green-800 font-bold hover:underline flex items-center gap-1 transition py-1 px-3 rounded-lg hover:bg-green-200/60"
+          >
+            Ver Todos os Editais ➔
+          </Link>
+        </div>
+
+        {/* Estados de Carregamento e Lista */}
+        {loading ? (
+          <p className="text-green-800 font-semibold py-8 text-center animate-pulse">
+            Carregando editais em aberto...
+          </p>
+        ) : editais.length === 0 ? (
+          <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm text-center max-w-md mx-auto">
+            <p className="text-gray-500 font-medium">Nenhum edital publicado no momento.</p>
+          </div>
+        ) : (
+          /* Grid Responsiva (1 coluna no celular, 2 em tablets, 3 no PC) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 justify-items-center">
+            {editais.map((edital) => (
+              <div key={edital.id} className="w-full flex justify-center">
+                <CardTexto
+                  titulo={edital.titulo}
+                  descricao={edital.descricao}
+                  status="Aberto"
+                  badgeColor="bg-emerald-100 text-emerald-700"
+                  iconColor="fill-emerald-600"
+                  linkColor="text-green-800"
+                  shadowColor="#006D38"
+                  deadline={`Edital #${edital.id}`}
+                  linkText="Ver Detalhes"
+                  link={`/editais/${edital.id}`}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
       </div>
     </section>
   );
