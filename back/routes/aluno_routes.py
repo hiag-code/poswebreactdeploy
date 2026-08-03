@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import or_
+from sqlalchemy import or_ 
 from sqlalchemy.orm import Session, Query
 from typing import Optional
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.aluno_model import Aluno
