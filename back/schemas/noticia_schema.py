@@ -16,7 +16,7 @@ class NoticiaCreate(BaseModel):
     titulo: str = Field(min_length=2)
     descricao: str = Field(min_length=2)
     link: str = Field(min_length=4)
-    imagem_url: str | None = None   # opcional — pode vir vazio
+    imagem_url: HttpUrl | None = None   # opcional — pode vir vazio
 
 
 class NoticiaUpdate(BaseModel):

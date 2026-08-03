@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.edital_model import Edital
@@ -22,11 +23,17 @@ def criar_edital(
     usuario: dict = Depends(require_admin),
 ):
     """Cria um edital no portal. **Restrito a admin** (secretaria)."""
-    edital = Edital(**dados.model_dump())
-    db.add(edital)
-    db.commit()
-    db.refresh(edital)
-    return edital
+
+    try:
+        edital = Edital(**dados.model_dump())
+        db.add(edital)
+        db.commit()
+        db.refresh(edital)
+        return edital
+    
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Erro interno ao cadastrar o edital no banco de dados.")
 
 
 @router.get("/", response_model=list[EditalResponse], summary="Listar editais")

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 from db.database import get_db
 from models.noticia_model import Noticia
@@ -26,11 +27,17 @@ def criar_noticia(
 
     `imagem_url` é opcional e guarda apenas a URL pública da imagem (o upload em si é feito fora, ex: S3/Firebase).
     """
-    noticia = Noticia(**dados.model_dump())
-    db.add(noticia)
-    db.commit()
-    db.refresh(noticia)
-    return noticia
+    try:
+        noticia = Noticia(**dados.model_dump())
+        db.add(noticia)
+        db.commit()
+        db.refresh(noticia)
+        return noticia
+    
+    except SQLAlchemyError:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Erro interno ao adicionar a noticia no banco de dados.")
+
 
 
 @router.get("/", response_model=list[NoticiaResponse], summary="Listar notícias")
