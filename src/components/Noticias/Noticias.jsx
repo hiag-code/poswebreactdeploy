@@ -1,39 +1,30 @@
-import img03 from "../../assets/imagens/03.png";
-import img04 from "../../assets/imagens/04.png";
-import img05 from "../../assets/imagens/05.png";
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
 import CardNoticias from "./CardNoticias";
 
-const noticias = [
-  {
-    imagem: img03,
-    alt: "Cerimônia de Colação de Grau",
-    data: "10 Jan 2024",
-    categoria: "Eventos",
-    titulo: "Cerimônia de Colação de Grau da Turma 2023",
-    descricao:
-      "A cerimônia de formatura da turma 2023 aconteceu no auditório principal do IFBA com a presença de familiares e autoridades.",
-  },
-  {
-    imagem: img04,
-    alt: "Workshop React e Next.js",
-    data: "05 Jan 2024",
-    categoria: "Palestras",
-    titulo: "Workshop sobre React e Next.js",
-    descricao:
-      "Palestrante internacional ministra workshop sobre as mais recentes tecnologias em desenvolvimento front-end.",
-  },
-  {
-    imagem: img05,
-    alt: "Projeto de Pesquisa FAPESB",
-    data: "28 Dez 2023",
-    categoria: "Pesquisa",
-    titulo: "Projeto de Pesquisa Aprovado pela FAPESB",
-    descricao:
-      "Grupo de pesquisa do programa recebe financiamento para desenvolvimento de aplicações web acessíveis.",
-  },
-];
-
 export default function Noticias() {
+  const [noticias, setNoticias] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function carregarNoticias() {
+      try {
+        setLoading(true);
+        const response = await axios.get("http://localhost:8000/noticias");
+        
+        // Pega as 3 notícias mais recentes
+        setNoticias(response.data.slice(0, 3));
+      } catch (error) {
+        console.error("Erro ao buscar notícias da Home:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    carregarNoticias();
+  }, []);
+
   return (
     <section className="w-full bg-white py-16">
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between mb-10">
@@ -46,8 +37,9 @@ export default function Noticias() {
           </h2>
         </div>
 
-        <a
-          href="#"
+        {/* Botão funcional navegando para a listagem completa */}
+        <Link
+          to="/noticias"
           className="flex items-center gap-2 text-green-700 font-semibold hover:underline"
         >
           Ver Todas
@@ -65,14 +57,36 @@ export default function Noticias() {
               d="M9 5l7 7-7 7"
             />
           </svg>
-        </a>
+        </Link>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 grid gap-12 md:grid-cols-3">
-        {noticias.map((noticia, index) => (
-          <CardNoticias key={index} noticia={noticia} />
-        ))}
-      </div>
+      {loading ? (
+        <p className="text-center text-gray-500 font-medium py-8 animate-pulse">
+          Carregando notícias...
+        </p>
+      ) : noticias.length === 0 ? (
+        <div className="max-w-7xl mx-auto px-6 text-center py-8">
+          <p className="text-gray-500">Nenhuma notícia encontrada.</p>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto px-6 grid gap-12 md:grid-cols-3">
+          {noticias.map((item) => (
+            <CardNoticias
+              key={item.id}
+              noticia={{
+                id: item.id,
+                titulo: item.titulo,
+                descricao: item.descricao,
+                // Mapeia a imagem enviada pelo backend ou usa uma capa padrão
+                imagem: item.imagem_url || "https://placehold.co/600x400?text=Sem+Imagem",
+                alt: item.titulo,
+                data: "Recente",
+                categoria: "Geral",
+              }}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

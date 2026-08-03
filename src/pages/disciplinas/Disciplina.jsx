@@ -3,9 +3,10 @@ import ListagemLayout from "../../layouts/ListagemLayout";
 import Tabela from "../../components/Tabela";
 import TituloTabela from "../../components/TituloTabela";
 import { useNavigate } from "react-router-dom";
+import { isAdmin } from "../../utils/auth";
 
 import { colunasDisciplinas } from "./Disciplinas.columns";
-import { buscarDisciplinas , buscarDisciplinaPorId, excluirDisciplina} from "./Disciplinas.service";
+import {listar_disciplinas, excluir_disciplina} from "./Disciplinas.service";
 import DisciplinaVisualizar from "./disciplinavisualizar";
 
 export default function DisciplinasPage() {
@@ -15,13 +16,14 @@ export default function DisciplinasPage() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
+  const eadmin = isAdmin();
 
   // carregar disciplina
   useEffect(() => {
     async function carregarDisciplinas() {
       try {
         setLoading(true);
-        const disciplinas = await buscarDisciplinas();
+        const disciplinas = await listar_disciplinas();
         setDados(disciplinas);
 
       } catch (error) {
@@ -40,8 +42,7 @@ export default function DisciplinasPage() {
       if (!confirmar) return;
   
       try {
-        await excluirDisciplina(id);
-  
+        await excluir_disciplina(id);
         // Atualização otimista (remove da lista sem recarregar página)
         setDados((prev) =>
           prev.filter((disciplina) => disciplina.id !== id)
@@ -55,12 +56,12 @@ export default function DisciplinasPage() {
   return (
     <ListagemLayout
       titulo="Lista de disciplinas"
-      subtitulo="Gerencie e visualize todos as disciplinas"
+      subtitulo="Gerencie e visualize todas as disciplinas"
       placeholderPesquisa="Buscar Disciplinas"
       pesquisa={pesquisa}
       onPesquisa={(e) => setPesquisa(e.target.value)}
-      onAdicionar={() => navigate("/disciplinas/nova")}
-      textoBotao=" Nova disciplina"
+      onAdicionar={ eadmin ? () => navigate("/disciplinas/nova") : undefined}
+      textoBotao=  {eadmin ? " Nova disciplina": undefined}
     >
       <TituloTabela
         titulo="Disciplinas"
@@ -73,25 +74,13 @@ export default function DisciplinasPage() {
       />
 
       {loading ? (
-        <p>Carregando...</p>
+        <p className="p-4 text-center font-bold text-gray-600">Carregando disciplinas...</p>
       ) : (
         <Tabela
           dados={dados}
-          colunas={colunasDisciplinas}
+          /* Passamos a função handleDelete aqui, igual no Aluno.jsx */
+          colunas={colunasDisciplinas(handleDelete)}
           chaveSelecao="id"
-          onAcaoClick={(acao, item) => {
-            if (acao === "visualizar") {
-              navigate(`/disciplinas/${item.id}`);
-            }
-             if (acao === "editar") {
-              navigate(`/disciplinas/${item.id}/editar`);
-            }
-            if (acao === "excluir") {
-              handleDelete(item.id);
-            }
-
-          }}
-
         />
       )}
     </ListagemLayout>

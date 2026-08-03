@@ -66,3 +66,8 @@ def deletar_Discipilina(id : int, db : Session = Depends(get_db), admin_user : d
         )
 
     return None
+
+@router.get("/", response_model=list[DisciplinaResponse], summary="listar disciplinas")
+def listar_disciplinas(db: Session = Depends(get_db)):
+    """lista todas as disciplinas cadastradas"""
+    return db.query(Disciplina).all()

@@ -1,7 +1,7 @@
 // src/pages/disciplinas/disciplinaVisualizar.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { buscarDisciplinaPorId } from "./Disciplinas.service";
+import { buscar_disciplina } from "./Disciplinas.service";
 import Texto_Escuro from "../../components/TextoEscuro";
 import Titulo_Escuro from "../../components/TituloEscuro";
 
@@ -16,7 +16,7 @@ export default function DisciplinaVisualizar() {
       try {
         setLoading(true);
         
-        const disciplinaData = await buscarDisciplinaPorId(id);
+        const disciplinaData = await buscar_disciplina(id);
         setDisciplina(disciplinaData);
       } catch (error) {
         console.error("Erro ao buscar disciplina:", error);

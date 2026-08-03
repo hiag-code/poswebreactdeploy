@@ -1,17 +1,16 @@
 // src/pages/disciplinas/DisciplinaCreatePage.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { criarDisciplina } from "./Disciplinas.service";
+import { criar_disciplina } from "./Disciplinas.service";
 
 export default function DisciplinaCreatePage() {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    id: "",       
+    codigo: "",       
     nome: "",
     ementa: "",
-    ch: "",
-    link: ""
+    carga_horaria: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -25,7 +24,13 @@ export default function DisciplinaCreatePage() {
 
     try {
       setLoading(true);
-      await criarDisciplina(form);
+
+      const dadosEnvio = {
+        ...form,
+        carga_horaria: parseInt(form.carga_horaria, 10)
+      };
+
+      await criar_disciplina(form);
       alert("Disciplina criada com sucesso!");
       navigate("/disciplinas");
     } catch (error) {

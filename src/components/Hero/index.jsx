@@ -5,15 +5,16 @@ import fundoTopo from '../../assets/imagens/fundotopo.png';
 export default function Hero() {
   return (
     <section 
-      className="text-white bg-cover bg-center"
+      className="text-white bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${fundoTopo})` }}
     >
-      <div className="pl-40 py-20 flex flex-col gap-8 items-start max-w-7xl">
+
+      <div className="px-6 py-12 md:pl-40 md:py-20 flex flex-col gap-6 md:gap-8 items-start max-w-7xl mx-auto">
 
         {/* Badge */}
         <a
           href="#"
-          className="inline-flex bg-white/20 text-white rounded-full px-4 py-1"
+          className="inline-flex bg-white/20 text-white rounded-full px-4 py-1 text-sm md:text-base"
         >
           Especialização Lato Sensu
         </a>
@@ -28,29 +29,28 @@ export default function Hero() {
           Forme-se como especialista em tecnologias web modernas. Aprenda com os melhores professores do IFBA e desenvolva projetos práticos que farão diferença no mercado.
         </Subtitulo_branco>
 
-        {/* Botões */}
-        <div className="flex gap-8">
-          <button className="bg-white text-green-700 py-3 px-7 rounded-lg font-bold hover:bg-gray-300 transition">
+        {/* Botões: Empilham no celular (flex-col) e ficam lado a lado no PC (sm:flex-row) */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full sm:w-auto">
+          <button className="bg-white text-green-700 py-3 px-7 rounded-lg font-bold hover:bg-gray-300 transition text-center">
             Inscreva-se Agora
           </button>
-          <button className="text-white border-2 py-3 px-7 rounded-lg font-bold hover:bg-white/20 transition">
+          <button className="text-white border-2 py-3 px-7 rounded-lg font-bold hover:bg-white/20 transition text-center">
             Saiba Mais
           </button>
         </div>
 
-        {/* Números */}
-        <section className="flex gap-8 text-white">
+        <section className="flex flex-wrap gap-6 sm:gap-8 text-white pt-2">
           <div className="flex flex-col items-start">
-            <h1 className="text-3xl font-bold">18</h1>
-            <p>Meses de Duração</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">18</h1>
+            <p className="text-sm sm:text-base">Meses de Duração</p>
           </div>
           <div className="flex flex-col items-start">
-            <h1 className="text-3xl font-bold">360h</h1>
-            <p>Carga Horária</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">360h</h1>
+            <p className="text-sm sm:text-base">Carga Horária</p>
           </div>
           <div className="flex flex-col items-start">
-            <h1 className="text-3xl font-bold">100%</h1>
-            <p>Empregabilidade</p>
+            <h1 className="text-2xl sm:text-3xl font-bold">100%</h1>
+            <p className="text-sm sm:text-base">Empregabilidade</p>
           </div>
         </section>
 
